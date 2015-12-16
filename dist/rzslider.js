@@ -41,6 +41,7 @@
       translate: null,
       stepsArray: null,
       draggableRange: false,
+      draggableRangeOnly: false,
       showSelectionBar: false,
       hideLimitLabels: false,
       readOnly: false,
@@ -298,9 +299,6 @@
         // Recalculate stuff if view port dimensions have changed
         angular.element($window).on('resize', calcDimFn);
 
-        if (this.options.vertical)
-          this.sliderElem.addClass('vertical');
-
         this.initHasRun = true;
 
         // Watch for changes to the model
@@ -373,8 +371,14 @@
 
         if (this.options.step <= 0)
           this.options.step = 1;
+
         this.range = this.scope.rzSliderModel !== undefined && this.scope.rzSliderHigh !== undefined;
         this.options.draggableRange = this.range && this.options.draggableRange;
+        this.options.draggableRangeOnly = this.range && this.options.draggableRangeOnly;
+        if(this.options.draggableRangeOnly) {
+          this.options.draggableRange = true;
+        }
+
         this.options.showTicks = this.options.showTicks || this.options.showTicksValues;
         this.scope.showTicks = this.options.showTicks; //scope is used in the template
 
@@ -489,10 +493,18 @@
         this.alwaysHide(this.cmbLab, this.options.showTicksValues || !this.range);
         this.alwaysHide(this.selBar, !this.range && !this.options.showSelectionBar);
 
+        if (this.options.vertical)
+          this.sliderElem.addClass('vertical');
+
         if (this.options.draggableRange)
           this.selBar.addClass('rz-draggable');
         else
           this.selBar.removeClass('rz-draggable');
+
+        if (this.options.draggableRangeOnly)
+          this.sliderElem.addClass('draggable-range-only');
+        else
+          this.sliderElem.removeClass('draggable-range-only');
       },
 
       alwaysHide: function(el, hide) {
@@ -1082,27 +1094,31 @@
           barMove = this.onMove;
         }
 
-        this.minH.on('mousedown', angular.bind(this, this.onStart, this.minH, 'rzSliderModel'));
-        if (this.range) {
-          this.maxH.on('mousedown', angular.bind(this, this.onStart, this.maxH, 'rzSliderHigh'));
-        }
-        this.fullBar.on('mousedown', angular.bind(this, this.onStart, null, null));
-        this.fullBar.on('mousedown', angular.bind(this, this.onMove, this.fullBar));
         this.selBar.on('mousedown', angular.bind(this, barStart, null, barTracking));
         this.selBar.on('mousedown', angular.bind(this, barMove, this.selBar));
-        this.ticks.on('mousedown', angular.bind(this, this.onStart, null, null));
-        this.ticks.on('mousedown', angular.bind(this, this.onMove, this.ticks));
-
-        this.minH.on('touchstart', angular.bind(this, this.onStart, this.minH, 'rzSliderModel'));
-        if (this.range) {
-          this.maxH.on('touchstart', angular.bind(this, this.onStart, this.maxH, 'rzSliderHigh'));
+        if(!this.options.draggableRangeOnly) {
+          this.minH.on('mousedown', angular.bind(this, this.onStart, this.minH, 'rzSliderModel'));
+          if (this.range) {
+            this.maxH.on('mousedown', angular.bind(this, this.onStart, this.maxH, 'rzSliderHigh'));
+          }
+          this.fullBar.on('mousedown', angular.bind(this, this.onStart, null, null));
+          this.fullBar.on('mousedown', angular.bind(this, this.onMove, this.fullBar));
+          this.ticks.on('mousedown', angular.bind(this, this.onStart, null, null));
+          this.ticks.on('mousedown', angular.bind(this, this.onMove, this.ticks));
         }
-        this.fullBar.on('touchstart', angular.bind(this, this.onStart, null, null));
-        this.fullBar.on('touchstart', angular.bind(this, this.onMove, this.fullBar));
+
         this.selBar.on('touchstart', angular.bind(this, barStart, null, barTracking));
         this.selBar.on('touchstart', angular.bind(this, barMove, this.selBar));
-        this.ticks.on('touchstart', angular.bind(this, this.onStart, null, null));
-        this.ticks.on('touchstart', angular.bind(this, this.onMove, this.ticks));
+        if(!this.options.draggableRangeOnly) {
+          this.minH.on('touchstart', angular.bind(this, this.onStart, this.minH, 'rzSliderModel'));
+          if (this.range) {
+            this.maxH.on('touchstart', angular.bind(this, this.onStart, this.maxH, 'rzSliderHigh'));
+          }
+          this.fullBar.on('touchstart', angular.bind(this, this.onStart, null, null));
+          this.fullBar.on('touchstart', angular.bind(this, this.onMove, this.fullBar));
+          this.ticks.on('touchstart', angular.bind(this, this.onStart, null, null));
+          this.ticks.on('touchstart', angular.bind(this, this.onMove, this.ticks));
+        }
       },
 
       /**
